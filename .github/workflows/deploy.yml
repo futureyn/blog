@@ -24,7 +24,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: github-pages
-          path: /dist # 确保这是你的构建输出目录
+          path: dist # 确保这是你的构建输出目录
 
   deploy:
     needs: build
@@ -37,9 +37,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: github-pages
-          path: /dist
+          path: ./dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
         with:
-          artifact: /dist
+          artifact: ./dist
