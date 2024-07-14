@@ -16,14 +16,26 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7' # 你可以根据需要调整 Ruby 版本
+
+      - name: Install faraday-retry
+        run: gem install faraday-retry
+
       - name: Install dependencies
         run: npm ci
+
       - name: Build the site
         run: npm run build
+
       - name: Check build output
         run: ls -la dist
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: github-pages
           path: dist
@@ -36,12 +48,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: github-pages
           path: ./dist
+
       - name: Check downloaded artifact
         run: ls -la ./dist
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
