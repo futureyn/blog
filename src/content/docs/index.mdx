@@ -1,0 +1,39 @@
+---
+title: Hello.
+description: Get started building your docs site with Starlight.
+template: splash
+hero:
+  tagline: React,Vue,Graphql,Node.js,可视化,小程序等等...
+  image:
+    file: ../../assets/my.jpeg
+  actions:
+    - text: 去看看
+      link: /reference/example/
+      icon: right-arrow
+      variant: primary
+<!--     - text: Read the Starlight docs -->
+<!--       link: https://starlight.astro.build -->
+<!--       icon: external -->
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## My traces
+
+<CardGrid stagger>
+	<Card title="成长时光轴" icon="pencil">
+        <p>微信小程序<a href="https://babysite.zlxinyu.cn/" >《成长时光轴》</a>，记录宝宝的成长过程，让爱永不消失，让每一个细节都值得回忆</p>
+	</Card>
+	<Card title="组件库" icon="pencil">
+		<div>
+		    这是基于vant-weapp二次封装的组件库，直接传入JSON数据即可生成对应的组件，刚开始不久，还在持续更新，感兴趣的小伙伴可以来看看：
+		    <a href="https://futureyn.github.io/create-form-docs/">https://futureyn.github.io/create-form-docs/</a>
+		</div>
+	</Card>
+{/* 	<Card title="Configure your site" icon="setting"> */}
+{/* 		Edit your `sidebar` and other config in `astro.config.mjs`. */}
+{/* 	</Card> */}
+{/* 	<Card title="Read the docs" icon="open-book"> */}
+{/* 		Learn more in [the Starlight Docs](https://starlight.astro.build/). */}
+{/* 	</Card> */}
+</CardGrid>
