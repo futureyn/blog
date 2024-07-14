@@ -16,15 +16,17 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v3
-      - name: Install, build, and upload your site
-        uses: withastro/action@v0
-        with:
-          args: npm ci && npm run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Build the site
+        run: npm run build
+      - name: Check build output
+        run: ls -la dist
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: github-pages
-          path: dist # 确保这是你的构建输出目录
+          path: dist
 
   deploy:
     needs: build
@@ -38,8 +40,10 @@ jobs:
         with:
           name: github-pages
           path: ./dist
+      - name: Check downloaded artifact
+        run: ls -la ./dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
         with:
-          artifact: ./dist
+          artifact_name: github-pages
