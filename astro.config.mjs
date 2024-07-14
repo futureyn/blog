@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
 	site: "https://futureyn.github.io",
-	base: "/blog",
+	base: "/blog/",
 	integrations: [
 		starlight({
 			title: 'Orion',
