@@ -2,6 +2,7 @@
   "name": "vigorous-visual",
   "type": "module",
   "version": "0.0.1",
+  "website": "https://futureyn.github.io/blog/",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
