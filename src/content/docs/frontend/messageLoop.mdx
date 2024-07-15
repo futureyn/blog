@@ -1,7 +1,6 @@
 ---
 title: JS事件循环
 ---
-import {Card,CardGrid} from "@astrojs/starlight/components";
 
 ## 什么是事件循环
 
@@ -203,7 +202,7 @@ S3(等待执行) - 执行完毕
 
 ```
 
-```javascript
+```markdown
 执行结果：
 A
 J
@@ -216,6 +215,108 @@ C
 I
 E
 ```
+
+### 代码示例-3
+> 接下来结合await/async再去分析
+
+```javascript
+console.log('A');
+
+setTimeout(() => {
+  console.log('B');
+  Promise.resolve().then(() => {
+    console.log('C');
+  });
+}, 0);
+
+async function asyncFunc() {
+  console.log('D');
+
+  await Promise.resolve();
+
+  console.log('E');
+}
+
+asyncFunc();
+
+Promise.resolve().then(() => {
+  console.log('F');
+}).then(() => {
+  console.log('G');
+});
+
+setTimeout(() => {
+  console.log('H');
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('I');
+});
+
+console.log('J');
+```
+
+> 代码分析-3
+
+**渲染主线程（执行全局JS）**
+```javascript
+// console.log('A'); A  执行-1
+// asyncFunc()调用;   D  执行-2，产生了 await 将 后续的 E 添加到微队列中
+// console.log('J'); J
+// E
+// F 产生了 G 添加到微队列
+// I
+// G
+// B
+// C
+// H
+```
+**微队列（优先级最高）**
+```markdown
+E(等待执行) - 执行完毕
+F(等待执行) - 执行完毕
+I(等待执行) - 执行完毕
+G(等待执行) - 执行完毕
+
+
+```
+**用户交互队列（优先级高）**
+```markdown
+空
+```
+**延时队列（优先级最低）**
+```markdown
+S1(等待执行)
+H(等待执行)
+
+```
+**其他线程(时刻监听是否有延时任务、用户点击、微任务)**
+```markdown
+1. setTimeout(() => {
+  console.log('B');
+  Promise.resolve().then(() => {
+    console.log('C');
+  });
+}, 0); 命名为 S1 推到延时队列中等待执行
+```
+
+```markdown
+输出结果：
+A
+D
+J
+F
+I
+G
+E
+B
+C
+H
+```
+
+:::tip[到这]
+如果你能正确分析出以上顺序，这表明你已经掌握了同步任务、微任务、宏任务以及 async/await 之间的关系和执行顺序。恭喜你！
+:::
 
 ## 什么是异步
 
