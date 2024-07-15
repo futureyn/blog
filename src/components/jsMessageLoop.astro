@@ -1,3 +1,29 @@
-<div style="color: yellow; font-size: 28px">
-    这是测试组件
+---
+import {Card} from "@astrojs/starlight/components";
+---
+<div>
+    <div>
+        <p>渲染主线程</p>
+        <Card >
+            <p>执行全局JS</p>
+        </Card>
+    </div>
+    <div>
+        <p>微任务（最优先执行）</p>
+        <Card>
+            <p></p>
+        </Card>
+    </div>
+    <div>
+        <p>用户交互任务（优先执行）</p>
+        <Card>
+            <p></p>
+        </Card>
+    </div>
+    <div>
+        <p>延时任务（最后执行）</p>
+        <Card>
+            <p></p>
+        </Card>
+    </div>
 </div>

@@ -1,11 +1,224 @@
 ---
 title: JS事件循环
 ---
-import JsMessageLoop from "../../../components/jsMessageLoop.astro";
+import {Card,CardGrid} from "@astrojs/starlight/components";
 
-### 介绍
-本文会从浏览器的角度来进行讨论，内容都是摘自官网描述和肝视频得来的，放心食用
-### 什么是事件循环
-<JsMessageLoop />
+## 什么是事件循环
 
-### 什么是异步
+:::tip
+事件循环(event_loop)也可以称为消息循环(message_loop)，是指浏览器在执行JS的过程中会开启一个死循环，无限的从队列(稍后会说到)中取出任务去执行，下面用代码来举例。
+:::
+
+每一个浏览器标签页都会有一个**渲染主线程**用于专门执行JS任务，JS的任务被分为不同的类型（微任务、延时任务、用户交互任务），不同类型的任务会被存放到不同的队列当中，当主线程空闲时，会根据任务级别去对应的队列中取出，然后执行。
+
+### 代码示例-1
+
+```javascript
+console.log('Step 1');
+
+setTimeout(() => {
+  console.log('Step 2');
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('Step 3');
+}).then(() => {
+  console.log('Step 4');
+});
+
+queueMicrotask(() => {
+  console.log('Step 5');
+});
+
+setTimeout(() => {
+  console.log('Step 6');
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('Step 7');
+});
+
+console.log('Step 8');
+```
+
+> 代码分析-1
+
+**渲染主线程（执行全局JS）**
+```javascript
+// 代码中的全局JS有
+console.log("Step 1") // 执行完毕-1
+console.log("Step 8") // 执行完毕-2
+// 所以直接执行
+// 此刻已经将所有的任务添加到了对应的队列当中，当主线程空闲时（执行完全局JS代码后），根据实际情况，也就是任务的优先级，去队列中取出任务，执行；
+// 开始执行微队列任务
+console.log("Step3"); // 产生了 Step4 的微任务，排到微队列最后执行
+console.log("Step5");
+console.log("Step7");
+console.log("Step4");
+// end 此刻微队列全部执行完毕
+// 开始执行延时队列任务
+console.log("Step2");
+console.log("Step6");
+
+```
+**微队列（优先级最高）**
+```markdown
+Step3(等待执行) - 执行完毕-3
+Step5(等待执行) - 执行完毕-4
+Step7(等待执行) - 执行完毕-5
+Step4(等待执行) - 执行完毕-6
+```
+**用户交互队列（优先级高）**
+```markdown
+空
+```
+**延时队列（优先级最低）**
+```markdown
+Step2(等待执行) - 执行完毕-7
+Step6(等待执行) - 执行完毕-8
+```
+**其他线程(时刻监听是否有延时任务、用户点击、微任务)**
+```markdown
+Step2 0 秒后到达，将该任务添加到延时队列中等待执行
+Step3 将该任务添加到微队列中等待执行
+Step5 会创建一个微任务，添加到微队列
+Step6 添加到延时队列
+Step7 将该任务添加到微队列中等待执行
+```
+
+```markdown
+执行结果：
+Step 1
+Step 8
+Step 3
+Step 5
+Step 7
+Step 4
+Step 2
+Step 6
+```
+
+### 代码示例-2
+
+```javascript
+console.log('A');
+
+setTimeout(() => {
+  console.log('B');
+  Promise.resolve().then(() => {
+    console.log('C');
+  });
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('D');
+  setTimeout(() => {
+    console.log('E');
+  }, 0);
+}).then(() => {
+  console.log('F');
+});
+
+queueMicrotask(() => {
+  console.log('G');
+});
+
+Promise.resolve().then(() => {
+  console.log('H');
+});
+
+setTimeout(() => {
+  console.log('I');
+}, 0);
+
+console.log('J');
+
+```
+
+> 代码分析-2
+
+**渲染主线程（执行全局JS）**
+```javascript
+console.log("A");
+console.log("J");
+// 执行全局JS后，主线程空闲，取队列任务执行
+// P1执行; 输出 'D' 产生E的延时任务和F的微任务，放到对应的队列中，P1执行完毕
+// Q1执行; 输出 'G'
+// P2执行; 输出 'H'
+// P3执行; 输出 'F'
+// S1执行; 输出 'B' 产生了C的微任务，放到对应的队列中，S1执行完毕
+// P4执行; 输出 'C'
+// S2执行; 输出 'I'
+// S3执行; 输出 'E'
+```
+**微队列（优先级最高）**
+```markdown
+P1(等待执行) - 执行完毕
+Q1(等待执行) - 执行完毕
+P2(等待执行) - 执行完毕
+P3(等待执行) - 执行完毕
+P4(等待执行) - 执行完毕
+
+```
+**用户交互队列（优先级高）**
+```markdown
+空
+```
+**延时队列（优先级最低）**
+```markdown
+S1(等待执行) - 执行完毕
+S2(等待执行) - 执行完毕
+S3(等待执行) - 执行完毕
+
+```
+**其他线程(时刻监听是否有延时任务、用户点击、微任务)**
+```markdown
+1. 第一个 setTimeout(() => {
+  console.log('B');
+  Promise.resolve().then(() => {  P4
+    console.log('C');
+  });
+}, 0); 临时命名为 S1 将回调函数放到延时队列中等待执行
+
+2. Promise.resolve().then(() => {
+  console.log('D');
+  setTimeout(() => { S3
+    console.log('E');
+  }, 0);
+}).then(() => { P3
+  console.log('F');
+}); 临时命名为 P1, 产生微任务，将.then的回调函数放到微队列等待执行
+
+3. queueMicrotask(() => {
+  console.log('G');
+}); 产生微任务 Q1
+
+4. Promise.resolve().then(() => {
+  console.log('H');
+}); 产生微任务 P2
+
+5. setTimeout(() => {
+  console.log('I');
+}, 0); 产生延时任务 S2
+
+```
+
+```javascript
+执行结果：
+A
+J
+D
+G
+H
+F
+B
+C
+I
+E
+```
+
+## 什么是异步
+
+:::tip[问题]
+什么是异步，也可以产生另一个问题，为什么存在异步，我们都知道JS是单线程的，是因为只有一个渲染主线程在处理JS的执行，如果没有异步代码，那么就会造成主线程在执行的过程中遇到比如setTimeout这种代码，会阻塞JS的执行，影响浏览器的渲染，上面解释道，如果部分为不同的队列，都放在主线程去执行，能想象我们的页面会有多卡。事件循环是JS运行时的一部分，负责协调异步任务的执行
+:::
