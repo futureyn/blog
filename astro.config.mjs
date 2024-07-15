@@ -14,6 +14,10 @@ export default defineConfig({
 					autogenerate: { directory: 'frontend' },
 				},
 				{
+					label: 'git',
+					autogenerate: { directory: 'git' },
+				},
+				{
 					label: '后端',
 					autogenerate: { directory: 'backend' },
 				},
