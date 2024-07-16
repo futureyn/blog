@@ -1,0 +1,40 @@
+---
+title: 导出Word格式文件
+---
+
+:::tip[使用html-docx-js + file-saver]
+    使用这个库来实现导出word格式文件，这个库已经有十多年了。。 不过用法还是很简单的，之后如果有新的也会更新在这，本文使用Vue2来演示
+:::
+
+>html-docx-js 仓库地址：https://evidenceprime.github.io/html-docx-js
+
+>file-saver npm：https://www.npmjs.com/package/file-saver
+
+```shell
+// 安装依赖 pnpm yarn 都可以
+npm install html-docx-js file-saver
+```
+
+```vue
+<template>
+<button @click="onExportExamWord">试卷导出</button>
+</template>
+
+<script>
+import htmlDocx from "html-docx-js/dist/html-docx"
+import { saveAs } from "file-saver"
+export default {
+    methods: {
+        onExportExamWord(){
+            // 需要导出的html模板内容
+            const content = `<div>幻灵战斗狼xxxx</div>`;
+            // 创建blob 数据
+            const blob = htmlDocx.asBlob(content);
+            saveAs(blob,'文档名.docx')
+        }
+    }
+}
+</script>
+```
+
+目前没有遇到问题，有问题提issue 讨论一下吧

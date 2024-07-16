@@ -8,6 +8,9 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Orion',
+			social: {
+				github: 'https://github.com/futureyn/blog/issues',
+			},
 			sidebar: [
 				{
 					label: '前端',
