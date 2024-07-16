@@ -15,6 +15,8 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import Testimonial from "../../components/testimonial.astro"
+import TestimonialGrid from "../../components/testimonial-grid.astro"
 
 ## My traces
 
@@ -29,3 +31,19 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 		</div>
 	</Card>
 </CardGrid>
+<TestimonialGrid title="相片">
+    <Testimonial
+        name="Rachel"
+        handle="rachelnabors"
+        cite="https://twitter.com/astrodotbuild/status/1724934718745915558"
+    >
+        <img src="http://blog.zlxinyu.cn/tiant.jpg" height={360}/>
+    </Testimonial>
+    <Testimonial
+        name="Rachel"
+        handle="rachelnabors"
+        cite="https://twitter.com/astrodotbuild/status/1724934718745915558"
+    >
+        <img src="http://blog.zlxinyu.cn/tiant.jpg" height={360}/>
+    </Testimonial>
+</TestimonialGrid>
