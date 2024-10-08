@@ -1,0 +1,108 @@
+---
+title: HTTP-QUERY
+---
+
+### 介绍
+
+:::note
+在 2024 年 10 月 07 日，http工作组发布了http最新【提案】消息，增加了【query】请求方法。
+
+提案文章：https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/05/
+:::
+
+:::tip[Tip]
+暂未正式纳入RFC 作为标准使用
+:::
+
+
+
+定义了一种新的HTTP 方法 【QUERY】，他是安全的、可幂等的请求方法，可携带请求内容
+
+什么是幂等性？
+
+在我们进行网络请求时，在同一个资源上执行某个操作多次，其效果与执行一次相同。无论操作被执行多少次，最终结果保持一致。幂等性是重要的特性，因为它确保了在网络环境下，即使请求被重复发送（可能由于网络超时或其他原因），不会导致资源状态的变化
+:::tip[Tip]
+post 请求不是幂等的，因为post表示一个资源的创建，每次都是一条新的
+:::
+现在我们使用的【GET】请求，携带参数是放在URL中的，下面是一个常见的请求示例
+
+```markdown
+GET /feed?q=foo&limit=10&sort=-published HTTP/1.1
+Host: example.org
+```
+如果查询参数扩展到几千字节活着更多的数据，我们不会这么做，因为它们对其有大小限制，这些限制往往无法提前知道或着发现，在URL中表达某些数据效率很低。
+
+作为 GET 的替代方法，许多实现都使用 HTTP POST 方法来执行查询，如下例所示。 在这种情况下，查询操作的输入参数是在请求内容中传递的，而不是使用请求 URI
+
+```markdown
+POST /feed HTTP/1.1
+Host: example.org
+Content-Type: application/x-www-form-urlencoded
+q=foo&limit=10
+```
+
+### QUERY
+
+【QUERY】方法就是为了解决这个问题
+
+对于请求 URI 所标识的资源而言，QUERY 请求既安全又具有惰性。 也就是说，QUERY 请求不会改变目标资源的状态。 然而，在处理 QUERY 请求时，服务器会分配计算和内存资源，甚至创建额外的 HTTP 资源，以便检索响应。 例如，没有结果的成功查询可以用 204 无内容响应来表示。 如果响应包含内容，则应描述操作结果。 在某些情况下，服务器可能会选择间接响应 QUERY 请求，方法是返回一个 3xx 重定向，并在 Location 标头字段中指定一个备用请求 URI，以便使用 HTTP GET 请求从中检索结果。 第 4 节将举例说明各种成功 QUERY 响应的非规范示例。
+
+:::tip[Tip]
+惰性：即该方法仅仅会查询数据，不会有其他的副作用，非常适合读取数据，不需要担心会对系统产生任何影响
+:::
+
+
+### 缓存
+
+
+```markdown
+1. query 方法的响应是可以被缓存的。这意味着缓存系统（比如：浏览器缓存、服务器缓存等）可以存储query请求的响应，并在后续相同的query请求时直接使用缓存的响应，而不是每次都向服务端进行发送请求。
+2. 缓存键
+    是指在我们进行query请求是，将数据进行规范化比如：
+    QUERY /api/user/details HTTP/1.1
+    Host: example.org
+    Content-Type: application/json
+    Content-Length: 39
+    {
+      "userId": "123",
+      "timestamp": "2023-10-08T11:30:00Z"
+    }
+    规范化后：
+        {"userId": "123","timestamp":"2023-10-08T11:30:00Z"}
+    然后后端通过这些数据使用加密方式进行加密。。。后面省略缓存命中等等操作，如果本次请求的数据与上次缓存的键相同那么就不在请求服务器
+3. 请求内容规范化：
+    为了提高缓存效率，缓存系统在生成缓存键时应该对请求内容进行规范化处理，以去除语义上不重要的差异。具体来说，规范化包括以下几个步骤：
+3.1 去除内容编码
+        内容边吗是为了压缩穿出数据添加的，他们并不影响请求的实际内容，在生成缓存键时应该去除这些编码
+3.2 基于格式规范的规范化
+        根据请求的 Content-Type 字段中的媒体类型后缀（如 +json），可以应用特定格式的规范化规则。例如，对于 JSON 数据，可以去除多余的空格、换行符等，使相同内容的 JSON 对象在格式上保持一致
+3.3 基于内容语义的规范化：
+```
+```markdown
+QUERY /api/user/details HTTP/1.1
+Host: example.org
+Content-Type: application/json
+Content-Length: 39
+
+{
+  "userId": "123",
+  "timestamp": "2023-10-08T11:30:00Z"
+}
+```
+### Accept-query
+```markdown
+它是一个响应头字段，服务器通过它来告知客户端支持哪种类型的查询格式
+服务器可以通过在响应中包含 Accept-Query 头字段来明确支持 QUERY 方法，并指定可用的查询格式媒体类型
+```
+```markdown
+Accept-Query: application/json, application/xml
+```
+### 安全考虑因素
+
+:::tip[tip]
+QUERY 方法与 [HTTP] 中描述的所有 HTTP 方法一样，需要考虑一般安全因素。
+在某些情况下，这种方法更为可取， 因为 URI 比请求内容更容易被记录。
+如果服务器创建了一个临时资源来表示 QUERY 请求的结果（例如，用于 Location 或 Content-Location 字段），
+则该资源的 URI 不应以明文形式公开原始请求内容。
+:::
+

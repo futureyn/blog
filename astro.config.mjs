@@ -25,6 +25,10 @@ export default defineConfig({
 					autogenerate: { directory: 'backend' },
 				},
 				{
+					label: 'HTTP',
+					autogenerate: { directory: 'http' },
+				},
+				{
 					label: '运维',
 					autogenerate: { directory: 'devops' },
 				},
