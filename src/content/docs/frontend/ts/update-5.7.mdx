@@ -1,0 +1,59 @@
+---
+title: "Update to 5.7"
+---
+##### 2024/11/23 发布了 5.7版本，下面看看都有哪些更新
+
+
+
+### 检查从未初始化的变量
+
+长期以来，TypeScript 已经能够捕获变量在所有先前分支中尚未初始化时出现的问题
+
+```typescript
+let result: number;
+// 一些条件判断
+if (someCondition()) {
+    result = doSomeWork();
+} else {
+    let temporaryWork = doSomeWork();
+    temporaryWork *= 2;
+    // 这里如果忘记给 result 分配 值
+}
+
+console.log(result); // 错误: 变量“result”在赋值之前使用。
+```
+不幸的是，有些地方这种分析不起作用。例如，如果在单独的函数中访问变量，类型系统不知道何时调用该函数，而是“乐观”地认为变量将被初始化。
+
+也就是说如果变量在函数内使用，TS不知道何时会调用这个函数，会被认为该变量即将被初始化；
+```typescript
+function foo() {
+    let result: number
+    if (someCondition()) {
+        result = doSomeWork();
+    } else {
+        let temporaryWork = doSomeWork();
+        temporaryWork *= 2;
+        // 这里忘记给 result 分配 值
+    }
+
+    printResult();
+
+    function printResult() {
+        console.log(result); // 这儿没有错误
+    }
+}
+```
+
+虽然 TypeScript 5.7 对可能已初始化的变量仍然比较宽容，但是当变量根本没有初始化时，类型系统能够报告错误。
+
+```typescript
+function foo() {
+    let result: number
+
+    // 其他逻辑，但是忘记给 result 赋值了
+
+    function printResult() {
+        console.log(result); // 会产生error级错误：变量“result”在赋值之前使用。
+    }
+}
+```

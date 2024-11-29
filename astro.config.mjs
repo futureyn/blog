@@ -17,6 +17,10 @@ export default defineConfig({
 					autogenerate: { directory: 'frontend' },
 				},
 				{
+					label: '算法',
+					autogenerate: { directory: 'algorithm' },
+				},
+				{
 					label: 'git',
 					autogenerate: { directory: 'git' },
 				},
