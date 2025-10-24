@@ -1,0 +1,197 @@
+---
+title: xc-web-update-notice
+---
+
+:::tip
+目前它只支持 webpack3、4、5、Rspack
+:::
+
+### 介绍
+
+当我们的管理系统（web）需要进行版本更新的时候，使用者那边往往不知道，导致用到旧的 web 资源访问新的 api 接口，导致不必要的 bug 产生
+
+### 什么是 xc-web-update-notice？
+
+它会在你项目构建时，向你的产物 dist 中写入版本文件（\_version.json）和历史版本文件（\_version-history.json）和检测文件（\_update-checker.js）
+**支持 cjs 和 esm**
+
+### \_version.json
+
+```javascript
+{
+    "hash": "3861b2cbbb022a12f557",
+    "buildTime": "2025/10/24 21:10:33",
+    "publishDescription": "当前版本的发布描述",
+    "isLogout": false // 本次发布是否需要用户退出登录
+}
+```
+
+### \_version-history.json
+
+```javascript
+// 注意：构建时不要删除上一次的构建产物，历史版本列表需要获取上一次的_version.json进行合并
+[
+  {
+    hash: "3861b2cbbb022a12f557",
+    buildTime: "2025/10/24 21:10:33",
+    publishDescription: "当前版本的发布描述",
+    isLogout: false, // 本次发布是否需要用户退出登录
+  },
+  {
+    hash: "3861b2cbbb022a12f557",
+    buildTime: "2025/10/24 21:10:33",
+    publishDescription: "当前版本的发布描述",
+    isLogout: false, // 本次发布是否需要用户退出登录
+  },
+];
+```
+
+### \_update-checker.js
+
+##### 他会向 window 中注入以下内容
+
+```javascript
+_wynUpdate = {
+  getClientCurrentVersion(version) {},
+  onUpdate(fn) {},
+  updateLater() {},
+};
+```
+
+###### 客户端当前版本：window.\_wynUpdate.getClientCurrentVersion（重要）
+
+```javascript
+// App.vue
+// 需要客户端向它传递当前的版本，没有版本传任何值都可以，这是判断是否更新的唯一条件。
+// 这一步是必须的，如果不传入就会导致无限的更新提示
+mounted() {
+    addEventListener("DOMContentLoaded", () => {
+        // 这样
+        window._wynUpdate.getClientCurrentVersion('version')
+    })
+}
+```
+
+##### 存在新版本：window.\_wynUpdate.onUpdate
+
+```javascript
+// App.vue
+// 当构建新的内容时，会更新_version.json中的hash，监测到更新后，会调用onUpdate函数
+// 更新逻辑在这里处理就行
+mounted() {
+    addEventListener("DOMContentLoaded", () => {
+        window._wynUpdate.getClientCurrentVersion('version')
+        // 这样
+        window._wynUpdate.onUpdate(() => {
+            console.log("有新版本更新")
+        })
+    })
+}
+```
+
+##### 稍后更新：window.\_wynUpdate.updateLater
+
+```javascript
+// App.vue
+// 当构建新的内容时，会更新_version.json中的hash，监测到更新后，会调用onUpdate函数
+// 更新逻辑在这里处理就行
+mounted() {
+    addEventListener("DOMContentLoaded", () => {
+        window._wynUpdate.getClientCurrentVersion('version')
+        // 这样
+        window._wynUpdate.onUpdate(() => {
+            console.log("有新版本更新")
+        })
+
+        // 稍后更新只需要调用updateLater就行，等待时间在实例化的时候传入，稍后有介绍
+        // 假设点击了稍后更新按钮
+        window._wynUpdate.updateLater()
+    })
+}
+```
+
+### 安装
+
+```shell
+node >= 18
+```
+
+```shell
+npm i xc-web-update-notice
+```
+
+```shell
+yarn add xc-web-update-notice
+```
+
+```shell
+pnpm add xc-web-update-notice
+```
+
+### 使用
+
+```javascript
+// vue.config.js
+import { WynUpdateNoticeWebpackPlugin } from "xc-web-update-notice";
+export default {
+  plugins: [
+    new WynUpdateNoticeWebpackPlugin({
+      // 本次构建是否需要退出登录，默认true
+      isLogout: false,
+      // 发布描述，默认空字符串
+      publishDescription: "这是一次测试发布",
+      // 版本遗留（_version-history.json）数量，默认10条。会占用服务器资源
+      keepVersions: 10,
+      // 稍后更新时间间隔，默认10分钟， 点击稍后更新后，10分钟后会自动再次调用onUpdate
+      laterInterval: 10 * 60 * 1000,
+      // 检测间隔时间，默认 5s
+      interval: 1000,
+    }),
+  ],
+};
+```
+
+```vue
+// App.vue
+<template>
+  <div>版本更新测试</div>
+</template>
+<script>
+export default {
+  name: "App",
+  mounted() {
+    addEventListener("DOMContentLoaded", () => {
+      // 版本写入
+      window._wynUpdate.getClientCurrentVersion("version");
+
+      window._wynUpdate.onUpdate((info) => {
+        const { oldHash, newHash, isLogout } = info;
+
+        // 以antdesign-vue为例
+        const modalIns = Modal.confirm({
+          title: "检测到版本有更新，点击更新后重新进行登录",
+          okText: "点击更新",
+          cancelText: "稍后更新",
+          onOk() {
+            if (isLogout) {
+            } else {
+            }
+          },
+          onCancel() {
+            modalIns.destroy();
+            // 稍后更新，10分钟后再次提示
+            window._wynUpdate.updateLater();
+          },
+        });
+      });
+    });
+  },
+};
+</script>
+```
+
+### 效果
+
+![Alt text](./2.png "title")
+
+![Alt text](./1.png "title")
