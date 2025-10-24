@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 
 interface Props {
     handle: string;
@@ -7,7 +6,7 @@ interface Props {
     cite: string;
 }
 
-const { name, handle, cite } = Astro.props;
+const { cite } = Astro.props;
 ---
 
 <li class="testimonial">
