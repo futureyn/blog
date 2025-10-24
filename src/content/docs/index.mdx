@@ -5,38 +5,40 @@ template: splash
 hero:
   tagline: React,Vue,Graphql,Node.js,可视化,小程序等等...
   image:
-    file: ../../assets/my.jpeg
+    file: ../../assets/houston.webp
   actions:
     - text: 去看看
       link: /blog/frontend/broswerrender/
       icon: right-arrow
       variant: primary
-
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
-import Testimonial from "../../components/testimonial.astro"
-import TestimonialGrid from "../../components/testimonial-grid.astro"
+import { Card, CardGrid } from "@astrojs/starlight/components";
+import Testimonial from "../../components/testimonial.astro";
+import TestimonialGrid from "../../components/testimonial-grid.astro";
 
 ## My traces
 
 <CardGrid stagger>
-	<Card title="成长时光轴" icon="pencil">
-        <p>微信小程序<a href="https://babysite.zlxinyu.cn/" >《成长时光轴》</a>，记录宝宝的成长过程，让爱永不消失，让每一个细节都值得回忆</p>
-	</Card>
-	<Card title="组件库" icon="pencil">
-		<div>
-		    这是基于vant-weapp二次封装的组件库，直接传入JSON数据即可生成对应的组件，刚开始不久，还在持续更新，感兴趣的小伙伴可以来看看：
-		    <a href="https://futureyn.github.io/create-form-docs/">https://futureyn.github.io/create-form-docs/</a>
-		</div>
-	</Card>
+  <Card title="成长时光轴" icon="pencil">
+    <p>
+      微信小程序<a href="https://babysite.zlxinyu.cn/">《成长时光轴》</a>
+      ，记录宝宝的成长过程，让爱永不消失，让每一个细节都值得回忆
+    </p>
+  </Card>
+  <Card title="组件库" icon="pencil">
+    <div>
+      这是基于vant-weapp二次封装的组件库，直接传入JSON数据即可生成对应的组件，刚开始不久，还在持续更新，感兴趣的小伙伴可以来看看：
+      <a href="https://futureyn.github.io/create-form-docs/">https://futureyn.github.io/create-form-docs/</a>
+    </div>
+  </Card>
 </CardGrid>
 <TestimonialGrid title="相片">
-    <Testimonial
-        name="Rachel"
-        handle="rachelnabors"
-        cite="https://twitter.com/astrodotbuild/status/1724934718745915558"
-    >
-        <img src="http://blog.zlxinyu.cn/tiant.jpg" height={360}/>
-    </Testimonial>
+  <Testimonial
+    name="Rachel"
+    handle="rachelnabors"
+    cite="https://twitter.com/astrodotbuild/status/1724934718745915558"
+  >
+    <img src="http://blog.zlxinyu.cn/tiant.jpg" height={360} />
+  </Testimonial>
 </TestimonialGrid>
